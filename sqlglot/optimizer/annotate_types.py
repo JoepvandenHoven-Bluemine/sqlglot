@@ -36,6 +36,7 @@ def annotate_types(
     annotators: t.Optional[AnnotatorsType] = None,
     coerces_to: t.Optional[t.Dict[exp.DataType.Type, t.Set[exp.DataType.Type]]] = None,
     dialect: DialectType = None,
+    partial_annotate: bool = False,
 ) -> E:
     """
     Infers the types of an expression, annotating its AST accordingly.
@@ -60,7 +61,12 @@ def annotate_types(
 
     schema = ensure_schema(schema, dialect=dialect)
 
-    return TypeAnnotator(schema, annotators, coerces_to).annotate(expression)
+    return TypeAnnotator(
+        schema=schema,
+        annotators=annotators,
+        coerces_to=coerces_to,
+        partial_annotate=partial_annotate,
+    ).annotate(expression)
 
 
 def _coerce_date_literal(l: exp.Expression, unit: t.Optional[exp.Expression]) -> exp.DataType.Type:
@@ -182,6 +188,7 @@ class TypeAnnotator(metaclass=_TypeAnnotator):
     def __init__(
         self,
         schema: Schema,
+        partial_annotate: bool = False,
         annotators: t.Optional[AnnotatorsType] = None,
         coerces_to: t.Optional[t.Dict[exp.DataType.Type, t.Set[exp.DataType.Type]]] = None,
         binary_coercions: t.Optional[BinaryCoercions] = None,
@@ -207,6 +214,9 @@ class TypeAnnotator(metaclass=_TypeAnnotator):
         # would reprocess the entire subtree to coerce the types of its operands' projections
         self._setop_column_types: t.Dict[int, t.Dict[str, exp.DataType | exp.DataType.Type]] = {}
 
+        # Enables partial annotation and skips re-annotating existing nodes
+        self._partial_annotate = partial_annotate
+
     def _set_type(
         self, expression: exp.Expression, target_type: t.Optional[exp.DataType | exp.DataType.Type]
     ) -> None:
@@ -224,9 +234,10 @@ class TypeAnnotator(metaclass=_TypeAnnotator):
         elif prev_type and t.cast(exp.DataType, prev_type).this == exp.DataType.Type.NULL:
             self._null_expressions.pop(expression_id, None)
 
-    def annotate(self, expression: E) -> E:
-        for scope in traverse_scope(expression):
-            self.annotate_scope(scope)
+    def annotate(self, expression: E, annotate_scope: bool = True) -> E:
+        if annotate_scope:
+            for scope in traverse_scope(expression):
+                self.annotate_scope(scope)
 
         # This takes care of non-traversable expressions
         expression = self._maybe_annotate(expression)
@@ -375,7 +386,7 @@ class TypeAnnotator(metaclass=_TypeAnnotator):
                 scope.expression.meta["query_type"] = struct_type
 
     def _maybe_annotate(self, expression: E) -> E:
-        if id(expression) in self._visited:
+        if id(expression) in self._visited or (self._partial_annotate and expression.type):
             return expression  # We've already inferred the expression's type
 
         annotator = self.annotators.get(expression.__class__)
