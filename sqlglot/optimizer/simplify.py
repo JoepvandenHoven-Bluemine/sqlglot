@@ -59,7 +59,6 @@ def simplify(
         coalesce_simplification: whether the simplify coalesce rule should be used.
             This rule tries to remove coalesce functions, which can be useful in certain analyses but
             can leave the query more verbose.
-        dialect: the dialect to use for simplification
     Returns:
         sqlglot.Expression: simplified expression
     """
