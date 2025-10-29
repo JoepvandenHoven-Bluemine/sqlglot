@@ -25,6 +25,7 @@ from sqlglot.helper import seq_get
 from sqlglot.parser import build_coalesce
 from sqlglot.time import format_time
 from sqlglot.tokens import TokenType
+from sqlglot.typing.tsql import EXPRESSION_SPEC
 
 if t.TYPE_CHECKING:
     from sqlglot._typing import E
@@ -411,6 +412,9 @@ class TSQL(Dialect):
     ALTER_TABLE_ADD_REQUIRED_FOR_EACH_COLUMN = False
 
     TIME_FORMAT = "'yyyy-mm-dd hh:mm:ss'"
+
+    # Specifies type inference rules for expressions
+    EXPRESSION_SPEC = EXPRESSION_SPEC.copy()
 
     ANNOTATORS = {
         **Dialect.ANNOTATORS,

@@ -21,6 +21,7 @@ from sqlglot.transforms import (
     ctas_with_tmp_tables_to_create_tmp_view,
     move_schema_columns_to_partitioned_by,
 )
+from sqlglot.typing.spark2 import EXPRESSION_SPEC
 
 if t.TYPE_CHECKING:
     from sqlglot._typing import E
@@ -152,6 +153,9 @@ def _annotate_by_similar_args(
 
 class Spark2(Hive):
     ALTER_TABLE_SUPPORTS_CASCADE = False
+
+    # Specifies type inference rules for expressions
+    EXPRESSION_SPEC = EXPRESSION_SPEC.copy()
 
     ANNOTATORS = {
         **Hive.ANNOTATORS,

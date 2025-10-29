@@ -39,6 +39,7 @@ from sqlglot.optimizer.scope import find_all_in_scope
 from sqlglot.tokens import TokenType
 from sqlglot.transforms import unqualify_columns
 from sqlglot.generator import unsupported_args
+from sqlglot.typing.presto import EXPRESSION_SPEC
 
 DATE_ADD_OR_SUB = t.Union[exp.DateAdd, exp.TimestampAdd, exp.DateSub]
 
@@ -266,6 +267,9 @@ class Presto(Dialect):
     # https://github.com/trinodb/trino/issues/12289
     # https://github.com/prestodb/presto/issues/2863
     NORMALIZATION_STRATEGY = NormalizationStrategy.CASE_INSENSITIVE
+
+    # Specifies type inference rules for expressions
+    EXPRESSION_SPEC = EXPRESSION_SPEC.copy()
 
     # The result of certain math functions in Presto/Trino is of type
     # equal to the input type e.g: FLOOR(5.5/2) -> DECIMAL, FLOOR(5/2) -> BIGINT

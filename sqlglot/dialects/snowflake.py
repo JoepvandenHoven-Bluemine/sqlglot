@@ -36,6 +36,7 @@ from sqlglot.helper import find_new_name, flatten, is_float, is_int, seq_get
 from sqlglot.optimizer.annotate_types import TypeAnnotator
 from sqlglot.optimizer.scope import build_scope, find_all_in_scope
 from sqlglot.tokens import TokenType
+from sqlglot.typing.snowflake import EXPRESSION_SPEC
 
 if t.TYPE_CHECKING:
     from sqlglot._typing import E, B
@@ -560,6 +561,9 @@ class Snowflake(Dialect):
     ARRAY_AGG_INCLUDES_NULLS = None
     ALTER_TABLE_ADD_REQUIRED_FOR_EACH_COLUMN = False
     TRY_CAST_REQUIRES_STRING = True
+
+    # Specifies type inference rules for expressions
+    EXPRESSION_SPEC = EXPRESSION_SPEC.copy()
 
     TYPE_TO_EXPRESSIONS = {
         **Dialect.TYPE_TO_EXPRESSIONS,
