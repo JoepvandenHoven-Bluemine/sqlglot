@@ -386,7 +386,11 @@ class TypeAnnotator(metaclass=_TypeAnnotator):
                 scope.expression.meta["query_type"] = struct_type
 
     def _maybe_annotate(self, expression: E) -> E:
-        if id(expression) in self._visited or (not self._overwrite_types and expression.type):
+        if id(expression) in self._visited or (
+            not self._overwrite_types
+            and expression.type
+            and not expression.is_type(exp.DataType.Type.UNKNOWN)
+        ):
             return expression  # We've already inferred the expression's type
 
         annotator = self.annotators.get(expression.__class__)
