@@ -426,6 +426,7 @@ def remove_complements(expression, root=True):
         for op in ops:
             if isinstance(op, exp.Not) and op.this in ops:
                 return exp.false() if isinstance(expression, exp.And) else exp.true()
+
     return expression
 
 
