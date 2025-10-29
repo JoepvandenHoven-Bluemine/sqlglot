@@ -36,7 +36,7 @@ def annotate_types(
     annotators: t.Optional[AnnotatorsType] = None,
     coerces_to: t.Optional[t.Dict[exp.DataType.Type, t.Set[exp.DataType.Type]]] = None,
     dialect: DialectType = None,
-    partial_annotate: bool = False,
+    overwrite_types: bool = True,
 ) -> E:
     """
     Infers the types of an expression, annotating its AST accordingly.
@@ -54,7 +54,7 @@ def annotate_types(
         schema: Database schema.
         annotators: Maps expression type to corresponding annotation function.
         coerces_to: Maps expression type to set of types that it can be coerced into.
-
+        overwrite_types: Re-annotate the existing AST types.
     Returns:
         The expression annotated with types.
     """
@@ -65,7 +65,7 @@ def annotate_types(
         schema=schema,
         annotators=annotators,
         coerces_to=coerces_to,
-        partial_annotate=partial_annotate,
+        overwrite_types=overwrite_types,
     ).annotate(expression)
 
 
@@ -188,7 +188,7 @@ class TypeAnnotator(metaclass=_TypeAnnotator):
     def __init__(
         self,
         schema: Schema,
-        partial_annotate: bool = False,
+        overwrite_types: bool = True,
         annotators: t.Optional[AnnotatorsType] = None,
         coerces_to: t.Optional[t.Dict[exp.DataType.Type, t.Set[exp.DataType.Type]]] = None,
         binary_coercions: t.Optional[BinaryCoercions] = None,
@@ -215,7 +215,7 @@ class TypeAnnotator(metaclass=_TypeAnnotator):
         self._setop_column_types: t.Dict[int, t.Dict[str, exp.DataType | exp.DataType.Type]] = {}
 
         # Enables partial annotation and skips re-annotating existing nodes
-        self._partial_annotate = partial_annotate
+        self._overwrite_types = overwrite_types
 
     def _set_type(
         self, expression: exp.Expression, target_type: t.Optional[exp.DataType | exp.DataType.Type]
@@ -386,7 +386,7 @@ class TypeAnnotator(metaclass=_TypeAnnotator):
                 scope.expression.meta["query_type"] = struct_type
 
     def _maybe_annotate(self, expression: E) -> E:
-        if id(expression) in self._visited or (self._partial_annotate and expression.type):
+        if id(expression) in self._visited or (not self._overwrite_types and expression.type):
             return expression  # We've already inferred the expression's type
 
         annotator = self.annotators.get(expression.__class__)

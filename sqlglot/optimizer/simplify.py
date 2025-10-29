@@ -179,7 +179,7 @@ def annotate_types_on_change(func):
         if new_expression != expression:
             dialect = kwargs.get("dialect")
             annotator = TypeAnnotator(
-                schema=ensure_schema(None, dialect=dialect), partial_annotate=True
+                schema=ensure_schema(None, dialect=dialect), overwrite_types=False
             )
             new_expression = annotator.annotate(expression=new_expression, annotate_scope=False)
         return new_expression
