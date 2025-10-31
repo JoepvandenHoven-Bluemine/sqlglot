@@ -1355,7 +1355,6 @@ def boolean_literal(condition):
     return exp.true() if condition else exp.false()
 
 
-@annotate_types_on_change
 def _flat_simplify(expression, simplifier, root=True):
     if root or not expression.same_parent:
         operands = []
